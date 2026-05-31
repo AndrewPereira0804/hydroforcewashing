@@ -1,7 +1,12 @@
+import { useState, type FormEvent } from 'react'
 import './App.css'
 
 const phoneNumber = '631-415-6478'
 const emailAddress = 'hydroforcewashing1@gmail.com'
+const web3FormsEndpoint = 'https://api.web3forms.com/submit'
+const quoteSubject = 'New Powerwashing Quote Request'
+
+type SubmitStatus = 'idle' | 'loading' | 'success' | 'error'
 
 const services = [
   {
@@ -28,27 +33,77 @@ const services = [
 
 const galleryItems = [
   {
-    title: 'Fence Refresh',
-    before: '/fence_before.png',
-    after: '/fence_after.png',
+    title: 'Fence Brightening',
+    before: '/fence_before1.jpeg',
+    after: '/fence_after1.jpeg',
     copy: 'Weathered fence panels brought back to a brighter, cleaner finish.',
   },
   {
-    title: 'Pail Cleaning',
-    before: '/bin_before.png',
-    after: '/bin_after.png',
-    copy: 'Garbage pails cleaned inside and out to reduce grime and lingering odors.',
+    title: 'Fence Surface Reset',
+    before: '/fence_before2.jpeg',
+    after: '/fence_after2.jpeg',
+    copy: 'Fence surfaces cleaned evenly to remove built-up grime and outdoor staining.',
+  },
+  {
+    title: 'Garbage Pail Refresh',
+    before: '/garbage_before1.jpg',
+    after: '/garbage_after1.jpg',
+    copy: 'Garbage bins washed down to cut grime, residue, and lingering odors.',
+  },
+  {
+    title: 'Pail Deep Clean',
+    before: '/pail_before1.jpg',
+    after: '/pail_after1.jpg',
+    copy: 'Buckets and pails cleaned inside and out to reduce grime and lingering odors.',
   },
 ]
 
 function App() {
+  const [status, setStatus] = useState<SubmitStatus>('idle')
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setStatus('loading')
+
+    const form = e.currentTarget
+    const accessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY
+
+    if (!accessKey) {
+      setStatus('error')
+      return
+    }
+
+    const formData = new FormData(form)
+    // Web3Forms lets this static site send quote requests without a custom backend.
+    formData.append('access_key', accessKey)
+    formData.append('subject', quoteSubject)
+
+    try {
+      const response = await fetch(web3FormsEndpoint, {
+        method: 'POST',
+        body: formData,
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setStatus('success')
+        form.reset()
+      } else {
+        setStatus('error')
+      }
+    } catch {
+      setStatus('error')
+    }
+  }
+
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
       <header className="sticky top-0 z-50 border-b border-white/15 bg-[#061c33]/95 text-white shadow-lg shadow-slate-950/10 backdrop-blur">
         <nav className="mx-auto flex max-w-7xl items-center justify-between gap-5 px-5 py-3 sm:px-6 lg:px-8">
           <a href="#home" className="flex items-center gap-3" aria-label="HydroForce Washing home">
-            <span className="grid h-12 w-12 place-items-center rounded-full bg-white shadow-md shadow-sky-950/20">
-              <img src="/logo.png" alt="" className="h-10 w-10 object-contain" />
+            <span className="grid h-12 w-12 place-items-center overflow-hidden rounded-full bg-white p-1 shadow-md shadow-sky-950/20">
+              <img src="/logo.jpg" alt="" className="h-full w-full rounded-full object-cover" />
             </span>
             <span>
               <span className="block text-sm font-black uppercase tracking-[0.22em] text-sky-200">
@@ -133,7 +188,7 @@ function App() {
               <div className="grid grid-cols-[0.86fr_1.14fr]">
                 <div className="bg-slate-100 p-5">
                   <img
-                    src="/fence_after.png"
+                    src="/fence_after2.jpeg"
                     alt="Clean fence after a HydroForce Washing service"
                     className="h-full min-h-[420px] w-full rounded-[1.35rem] object-cover"
                   />
@@ -141,7 +196,7 @@ function App() {
                 <div className="flex flex-col justify-between bg-white p-6 text-slate-950">
                   <div>
                     <img
-                      src="/logo.png"
+                      src="/logo.jpg"
                       alt="HydroForce Washing logo"
                       className="h-36 w-36 object-contain"
                     />
@@ -200,14 +255,14 @@ function App() {
             <div className="max-w-3xl">
               <p className="text-sm font-black uppercase tracking-[0.25em] text-sky-300">Gallery</p>
               <h2 className="mt-3 text-3xl font-black tracking-normal sm:text-5xl">
-                Real before and after work, shown without the fluff.
+                Real before and after work.
               </h2>
             </div>
             <a
               href={`mailto:${emailAddress}`}
               className="inline-flex w-fit items-center justify-center rounded-full border border-white/20 px-6 py-3 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-white hover:text-[#061c33]"
             >
-              Email for a free estimate
+              Email for free estimate
             </a>
           </div>
 
@@ -280,12 +335,25 @@ function App() {
             </div>
           </div>
 
-          <form className="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-5 shadow-xl shadow-slate-950/8 sm:p-7">
+          <form
+            className="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-5 shadow-xl shadow-slate-950/8 sm:p-7"
+            onSubmit={handleSubmit}
+          >
+            <input
+              type="checkbox"
+              name="botcheck"
+              className="hidden"
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+            />
             <div className="grid gap-5 sm:grid-cols-2">
               <label className="block">
                 <span className="text-sm font-black text-[#061c33]">Name</span>
                 <input
+                  name="name"
                   type="text"
+                  required
                   placeholder="Your name"
                   className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
                 />
@@ -293,38 +361,81 @@ function App() {
               <label className="block">
                 <span className="text-sm font-black text-[#061c33]">Phone</span>
                 <input
+                  name="phone"
                   type="tel"
+                  required
                   placeholder="Best phone number"
+                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                />
+              </label>
+              <label className="block">
+                <span className="text-sm font-black text-[#061c33]">Email</span>
+                <input
+                  name="email"
+                  type="email"
+                  placeholder="Email address"
+                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                />
+              </label>
+              <label className="block">
+                <span className="text-sm font-black text-[#061c33]">Location / Town</span>
+                <input
+                  name="location"
+                  type="text"
+                  placeholder="Town or neighborhood"
                   className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
                 />
               </label>
               <label className="block sm:col-span-2">
                 <span className="text-sm font-black text-[#061c33]">Service Needed</span>
-                <select className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
-                  <option>Garbage pails</option>
-                  <option>Driveway cleaning</option>
-                  <option>Fence cleaning</option>
-                  <option>Decks & patios</option>
-                  <option>Siding</option>
-                  <option>Deep clean</option>
-                  <option>Other exterior cleaning</option>
-                  <option>Multiple services</option>
+                <select
+                  name="service_needed"
+                  required
+                  defaultValue=""
+                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                >
+                  <option value="" disabled>
+                    Select a service
+                  </option>
+                  <option value="Garbage pails">Garbage pails</option>
+                  <option value="Driveway cleaning">Driveway cleaning</option>
+                  <option value="Fence cleaning">Fence cleaning</option>
+                  <option value="Decks & patios">Decks & patios</option>
+                  <option value="Siding">Siding</option>
+                  <option value="Deep clean">Deep clean</option>
+                  <option value="Other exterior cleaning">Other exterior cleaning</option>
+                  <option value="Multiple services">Multiple services</option>
                 </select>
               </label>
               <label className="block sm:col-span-2">
                 <span className="text-sm font-black text-[#061c33]">Project Details</span>
                 <textarea
+                  name="message"
                   rows={5}
+                  required
                   placeholder="Tell us what needs cleaning, where it is, and any timing preference."
                   className="mt-2 w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
                 ></textarea>
               </label>
             </div>
+            <div aria-live="polite">
+              {status === 'success' && (
+                <p className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800">
+                  Thanks. Your quote request was sent, and HydroForce will follow up soon.
+                </p>
+              )}
+              {status === 'error' && (
+                <p className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-800">
+                  Something went wrong. Please call or text {phoneNumber} instead.
+                </p>
+              )}
+            </div>
             <button
-              type="button"
-              className="mt-6 w-full rounded-full bg-[#061c33] px-7 py-4 text-base font-black text-white shadow-lg shadow-slate-950/15 transition hover:-translate-y-0.5 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+              type="submit"
+              disabled={status === 'loading'}
+              className="mt-6 w-full rounded-full bg-[#061c33] px-7 py-4 text-base font-black text-white shadow-lg shadow-slate-950/15 transition hover:-translate-y-0.5 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
             >
-              Request Free Estimate
+              {status === 'loading' ? 'Sending...' : 'Request Free Estimate'}
             </button>
           </form>
         </div>
@@ -333,8 +444,8 @@ function App() {
       <footer className="bg-[#061c33] px-5 py-8 text-white sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-7xl flex-col gap-5 border-t border-white/10 pt-8 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
-            <span className="grid h-11 w-11 place-items-center rounded-full bg-white">
-              <img src="/logo.png" alt="" className="h-9 w-9 object-contain" />
+            <span className="grid h-11 w-11 place-items-center overflow-hidden rounded-full bg-white p-1">
+              <img src="/logo.jpg" alt="" className="h-full w-full rounded-full object-cover" />
             </span>
             <div>
               <p className="font-black">HydroForce Washing</p>

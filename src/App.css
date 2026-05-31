@@ -1,7 +1,7 @@
 .hero-section {
   background:
     linear-gradient(135deg, rgba(6, 28, 51, 0.96) 0%, rgba(8, 44, 80, 0.98) 54%, rgba(7, 76, 121, 0.94) 100%),
-    url('/fence_after.png');
+    url('/fence_after2.jpeg');
   background-position: center;
   background-size: cover;
 }
