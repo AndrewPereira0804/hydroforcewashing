@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Analytics } from '@vercel/analytics/next'
+import { Analytics } from '@vercel/analytics/react'
 import './App.css'
 
 const phoneNumber = '631-415-6478'
